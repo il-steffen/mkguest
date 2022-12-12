@@ -34,7 +34,7 @@ $root_uuid / ext4 errors=remount-ro 0 1
 HERE
 
 proxy_file=/etc/profile.d/proxy.sh
-test -f $proxy_file && cp $proxy_file $MNT/$proxy_file
+test -f $proxy_file && sudo cp $proxy_file $MNT/$proxy_file
 
 sudo umount $MNT
 sudo qemu-nbd -d /dev/nbd0
