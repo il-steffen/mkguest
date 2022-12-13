@@ -2,7 +2,8 @@
 
 set -e
 
-grep . /sys/module/kvm_intel/parameters/nested
+which qemu-img || echo "Could not find qemu-img - try apt install qemu-utils"
+which debootstrap || echo "Could not find qemu-img - try apt install debootstrap"
 
 #LANG="C.UTF-8" 
 qemu-img create -f qcow2 debian.qcow2 8G

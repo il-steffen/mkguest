@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 MNT=$(mktemp -d)
 sudo modprobe nbd
 sudo qemu-nbd -c /dev/nbd0 debian.qcow2

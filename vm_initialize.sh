@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 systemctl enable serial-getty@ttyS0.service
 systemctl enable systemd-networkd.service
 

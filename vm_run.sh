@@ -1,8 +1,13 @@
 #!/bin/bash
 
-IMAGE=debian.qcow2
+set -e
 
-qemu-system-x86_64 \
+IMAGE=debian.qcow2
+QEMU=qemu-system-x86_64
+
+which $QEMU || echo "Could not find $QEMU - try apt install qemu-kvm"
+
+$QEMU \
 	-cpu host,vmx=on,intel-pt=on \
 	-enable-kvm \
 	-hda $IMAGE \
