@@ -2,14 +2,21 @@
 
 set -e
 
+IMAGE=debian.qcow2
+release=focal
+utils=less,vim,tmux,git,make
+pkgs=locales-all,sudo,net-tools,openssh-server,$utils
+# set this to override host default
+#mirror=http://us.archive.ubuntu.com/ubuntu
+
 which qemu-img || echo "Could not find qemu-img - try apt install qemu-utils"
 which debootstrap || echo "Could not find qemu-img - try apt install debootstrap"
 
 #LANG="C.UTF-8" 
-qemu-img create -f qcow2 debian.qcow2 8G
+qemu-img create -f qcow2 $IMAGE 8G
 
 sudo modprobe nbd
-sudo qemu-nbd -c /dev/nbd0 debian.qcow2
+sudo qemu-nbd -c /dev/nbd0 $IMAGE
 
 sudo parted -s -a optimal -- /dev/nbd0 \
 	mklabel msdos \
@@ -20,13 +27,9 @@ MNT=$(mktemp -d)
 sudo mkfs -t ext4 -L root /dev/nbd0p1
 sudo mount /dev/nbd0p1 $MNT
 
-release=focal
-utils=less,vim,tmux,git,make
-pkgs=locales-all,sudo,net-tools,openssh-server,$utils
 cache="$PWD/debootstrap.cache"
-mirror=http://us.archive.ubuntu.com/ubuntu
 mkdir -p $cache
-sudo debootstrap --cache-dir=$cache --include=$pkgs $release $MNT $mirror
+sudo -E debootstrap --cache-dir=$cache --include=$pkgs $release $MNT $mirror
 
 root_uuid="$(sudo blkid | grep '^/dev/nbd0' | grep ' LABEL="root" ' | grep -o ' UUID="[^"]\+"' | sed -e 's/^ //' )"
 
@@ -34,7 +37,7 @@ sudo tee $MNT/etc/fstab << HERE
 $root_uuid / ext4 errors=remount-ro 0 1
 HERE
 
-proxy_file=/etc/profile.d/proxy.sh
+proxy_file=$(ls /etc/profile.d/*proxy.sh)
 test -f $proxy_file && sudo cp $proxy_file $MNT/$proxy_file
 
 sudo umount $MNT
@@ -43,7 +46,7 @@ rmdir $MNT
 
 # chroot to disk
 MNT=$(mktemp -d)
-sudo qemu-nbd -c /dev/nbd0 debian.qcow2
+sudo qemu-nbd -c /dev/nbd0 $IMAGE
 sudo mount $root_uuid $MNT
 sudo mount --bind /dev  $MNT/dev
 sudo mount --bind /sys  $MNT/sys
