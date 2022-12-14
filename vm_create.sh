@@ -37,8 +37,10 @@ sudo tee $MNT/etc/fstab << HERE
 $root_uuid / ext4 errors=remount-ro 0 1
 HERE
 
-proxy_file=$(ls /etc/profile.d/*proxy.sh)
-test -f $proxy_file && sudo cp $proxy_file $MNT/$proxy_file
+proxy_files=$(ls /etc/profile.d/*proxy.sh /etc/apt/apt.conf.d/*proxy.conf)
+for file in $proxy_files; do
+	sudo cp $file $MNT/$file
+done
 
 sudo umount $MNT
 sudo qemu-nbd -d /dev/nbd0
@@ -52,7 +54,7 @@ sudo mount --bind /dev  $MNT/dev
 sudo mount --bind /sys  $MNT/sys
 sudo mount --bind /proc $MNT/proc
 sudo cp vm_initialize.sh $MNT/
-sudo chroot $MNT /vm_initialize.sh
+sudo -E chroot $MNT /vm_initialize.sh
 
 # exit
 sudo umount $MNT/dev
